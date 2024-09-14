@@ -13,6 +13,7 @@ def all_states():
     states = storage.all("State")
     return jsonify([state.to_dict() for state in states.values()])
 
+
 @app_views.route('/states/<state_id>')
 def get_state(state_id):
     """ Return a state """
@@ -21,7 +22,9 @@ def get_state(state_id):
         return jsonify({"error": "Not found"}), 404
     return jsonify(state.to_dict())
 
-@app_views.route('/states/<state_id>', methods=['DELETE'], strict_slashes=False)
+
+@app_views.route('/states/<state_id>', methods=['DELETE'],
+                 strict_slashes=False)
 def delete_state(state_id):
     """ Delete a state """
     state = storage.get("State", state_id)
@@ -37,6 +40,7 @@ def delete_state(state_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app_views.route('/states', methods=['POST'], strict_slashes=False)
 def create_state():
     """ Create a state """
@@ -48,6 +52,7 @@ def create_state():
     new_state = State(**state)
     new_state.save()
     return jsonify(new_state.to_dict()), 201
+
 
 @app_views.route('/states/<state_id>', methods=['PUT'], strict_slashes=False)
 def update_state(state_id):
