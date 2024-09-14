@@ -62,6 +62,8 @@ def update_state(state_id):
     state = storage.get("State", state_id)
     if state is None:
         return jsonify({"error": "Not found"}), 404
+    if not request.is_json:
+        return jsonify({"error": "Not a JSON"}), 400
     data = request.get_json()
     if data is None:
         return jsonify({"error": "Not a JSON"}), 400
