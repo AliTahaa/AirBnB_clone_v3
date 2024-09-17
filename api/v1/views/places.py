@@ -91,33 +91,36 @@ def search_place():
     data = request.get_json()
     if data is None:
         return jsonify({"error": "Not a JSON"}), 400
-    places = []
-    if data:
-        states = data.get("states")
-        cities = data.get("cities")
-        amenities = data.get("amenities")
-        if not states and not cities and not amenities:
-            return jsonify({"error": "Missing states or cities or amenities"}),
-        400
-        if states:
-            for state_id in states:
-                state = storage.get("State", state_id)
-                if state:
-                    for city in state.cities:
-                        for place in city.places:
-                            places.append(place)
-        if cities:
-            for city_id in cities:
-                city = storage.get("City", city_id)
-                if city:
-                    for place in city.places:
-                        places.append(place)
-        if amenities:
-            for amenity_id in amenities:
-                amenity = storage.get("Amenity", amenity_id)
-                if amenity:
-                    for place in amenity.places:
-                        places.append(place)
+
+    places = storage.all("Place").values()
+    filtered_places = []
+
+    states = data.get("states", [])
+    cities = data.get("cities", [])
+    amenities = data.get("amenities", [])
+
+    if states:
+        state_places = []
+        for state_id in states:
+            state = storage.get("State", state_id)
+            if state:
+                for city in state.cities:
+                    state_places.extend(city.places)
+        places = state_places
+
+    if cities:
+        city_places = []
+        for city_id in cities:
+            city = storage.get("City", city_id)
+            if city:
+                city_places.extend(city.places)
+        places = city_places
+
+    if amenities:
+        for place in places:
+            if all(amenity_id in [amenity.id for amenity in place.amenities] for amenity_id in amenities):
+                filtered_places.append(place)
     else:
-        places = storage.all("Place").values()
-    return jsonify([place.to_dict() for place in places])
+        filtered_places = places
+
+    return jsonify([place.to_dict() for place in filtered_places])
